@@ -1,5 +1,20 @@
 FROM node:8
 
+RUN apt-get update && apt-get install -y debconf-utils debconf apt-utils locales sudo bash
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+RUN \
+sed -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' \
+-i /etc/locale.gen && \
+locale-gen en_US en_US.UTF-8 && \
+locale > /etc/default/locale
+
+RUN curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+RUN apt-get install -y nodejs
+
+RUN node -v && nodejs -v
+
 RUN set -x \
  && curl -sL https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh \
  && useradd -m -G users -s /bin/bash meteor
@@ -15,6 +30,8 @@ RUN cd /source \
  && chown -R meteor:meteor /app
 
 USER meteor
+
+RUN wget https://registry.npmjs.org/amdefine/-/amdefine-1.0.1.tgz -P /source
 
 RUN cd /source \
  && meteor npm install \
